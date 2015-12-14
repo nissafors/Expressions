@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using System.Globalization;
 
 namespace Expressions
 {
@@ -34,7 +35,7 @@ namespace Expressions
             foreach (string symbol in RPN)
             {
                 if (isNumeric(symbol))
-                    numStack.Push(decimal.Parse(symbol));
+                    numStack.Push(decimal.Parse(symbol, new CultureInfo("en-US")));
                 else
                 {
                     // Operator found
@@ -127,7 +128,7 @@ namespace Expressions
         private static bool isNumeric(string str)
         {
             decimal tmp;
-            if (decimal.TryParse(str, out tmp))
+            if (decimal.TryParse(str, NumberStyles.AllowDecimalPoint, new CultureInfo("en-US"), out tmp))
                 return true;
             else
                 return false;
