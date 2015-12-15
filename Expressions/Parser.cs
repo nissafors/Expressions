@@ -12,7 +12,6 @@ namespace Expressions
     class Parser
     {
         // TODO:
-        // * Negative numbers
         // * Factorial
         // * Functions
 
@@ -20,70 +19,17 @@ namespace Expressions
         enum Precedence { ParenFunc, AddSub, MultDiv, Pow, Fact };
         enum Operator { Add, Sub, Mult, Div, Pow, Fact, LeftParen, RightParen, Func };
 
-        // Parse and return the result of a mathematical expression given in infix notation.
+        // <summary>
+        // Parse and return the result of a mathematical expression given in infix notation.</summary>
         public static decimal GetResult(ReadOnlyCollection<string> symbols)
         {
+            symbols = rewriteNegitives(symbols);
             ReadOnlyCollection<string> RPN = getRPN(symbols);
             return evaluateRPN(RPN);
         }
 
-        // Return the calculated result of a mathematical expression given in RPN notation.
-        private static decimal evaluateRPN(ReadOnlyCollection<string> RPN)
-        {
-            Stack<decimal> numStack = new Stack<decimal>();
-
-            foreach (string symbol in RPN)
-            {
-                if (isNumeric(symbol))
-                    numStack.Push(decimal.Parse(symbol, new CultureInfo("en-US")));
-                else
-                {
-                    // Operator found
-                    Operator oper = getOperatorType(symbol);
-                    decimal operandL, operandR;
-
-                    // Is it not a binary operator?
-                    if (oper == Operator.Fact)
-                    {
-                        if (numStack.Count < 1)
-                            throw new ArgumentException("Parser: Malformed expression.");
-                    }
-                    else
-                    {
-                        if (numStack.Count < 2)
-                            throw new ArgumentException("Parser: Malformed expression.");
-                        operandR = numStack.Pop();
-                        operandL = numStack.Pop();
-                        switch (oper)
-                        {
-                            case Operator.Add:
-                                numStack.Push(operandL + operandR);
-                                break;
-                            case Operator.Sub:
-                                numStack.Push(operandL - operandR);
-                                break;
-                            case Operator.Mult:
-                                numStack.Push(operandL * operandR);
-                                break;
-                            case Operator.Div:
-                                numStack.Push(operandL / operandR);
-                                break;
-                            case Operator.Pow:
-                                numStack.Push((decimal)Math.Pow((double)operandL, (double)operandR));
-                                break;
-                        }
-                    }
-                }
-
-            }
-
-            if (numStack.Count != 1)
-                throw new ArgumentException("Parser: Malformed expression.");
-
-            return numStack.Pop();
-        }
-
-        // Return operator precedence
+        // <summary>
+        // Return operator precedence.</summary>
         private static Precedence getPrecedence(Operator oper)
         {
             if (oper == Operator.Add || oper == Operator.Sub)
@@ -98,7 +44,8 @@ namespace Expressions
                 return Precedence.ParenFunc;
         }
 
-        // Return the type of the operator in string
+        // <summary>
+        // Return the type of the operator in string.</summary>
         private static Operator getOperatorType(string oper)
         {
             switch (oper)
@@ -124,20 +71,51 @@ namespace Expressions
             }
         }
 
-        // Return true if string is numeric
+        // <summary>
+        // Return true if string is numeric.</summary>
         private static bool isNumeric(string str)
         {
             decimal tmp;
-            if (decimal.TryParse(str, NumberStyles.AllowDecimalPoint, new CultureInfo("en-US"), out tmp))
+            if (decimal.TryParse(str, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, new CultureInfo("en-US"), out tmp))
                 return true;
             else
                 return false;
         }
 
+        // <summary>
+        // Search symbols collection for minus sign/numeral combinations that should be interpreted
+        // as negative numbers and rewrite them as one symbol.</summary>
+        private static ReadOnlyCollection<string> rewriteNegitives(ReadOnlyCollection<string> symbols)
+        {
+            if (symbols.Count < 2)
+                return symbols;
+
+            List<string> symbolsList = symbols.ToList<string>();
+
+            for (int i = 0; i < symbolsList.Count - 1; i++)
+            {
+                // Examine three symbols in a row
+                string symBefore =  i > 0 ? symbolsList.ElementAt(i - 1) : "";
+                string symAt = symbolsList.ElementAt(i);
+                string symAfter = symbolsList.ElementAt(i + 1);
+
+                if (!isNumeric(symBefore)
+                    && symBefore != ")"
+                    && symBefore != "!"
+                    && symAt == "-"
+                    && isNumeric(symAfter))
+                {
+                    symbolsList.RemoveRange(i, 2);
+                    symbolsList.Insert(i, symAt + symAfter);
+                }
+            }
+
+            return symbolsList.AsReadOnly();
+        }
+
+        // <summary>
         // Reorder a mathematical symbol list written in infix notation to
-        // reverse polish notation and return the result.
-        // Note: This implementation keeps parenthesises. Use removeParenRPN()
-        // to remove them.
+        // reverse polish notation and return the result.</summary>
         private static ReadOnlyCollection<string> getRPN(ReadOnlyCollection<string> symbols)
         {
             List<string> RPN = new List<string>();
@@ -204,6 +182,63 @@ namespace Expressions
                 RPN.Add(operatorStack.Pop());
 
             return RPN.AsReadOnly();
+        }
+
+        // <summary>
+        // Return the calculated result of a mathematical expression given in RPN notation.</summary>
+        private static decimal evaluateRPN(ReadOnlyCollection<string> RPN)
+        {
+            Stack<decimal> numStack = new Stack<decimal>();
+
+            foreach (string symbol in RPN)
+            {
+                if (isNumeric(symbol))
+                    numStack.Push(decimal.Parse(symbol, new CultureInfo("en-US")));
+                else
+                {
+                    // Operator found
+                    Operator oper = getOperatorType(symbol);
+                    decimal operandL, operandR;
+
+                    // Is it not a binary operator?
+                    if (oper == Operator.Fact)
+                    {
+                        if (numStack.Count < 1)
+                            throw new ArgumentException("Parser: Malformed expression.");
+                    }
+                    else
+                    {
+                        if (numStack.Count < 2)
+                            throw new ArgumentException("Parser: Malformed expression.");
+                        operandR = numStack.Pop();
+                        operandL = numStack.Pop();
+                        switch (oper)
+                        {
+                            case Operator.Add:
+                                numStack.Push(operandL + operandR);
+                                break;
+                            case Operator.Sub:
+                                numStack.Push(operandL - operandR);
+                                break;
+                            case Operator.Mult:
+                                numStack.Push(operandL * operandR);
+                                break;
+                            case Operator.Div:
+                                numStack.Push(operandL / operandR);
+                                break;
+                            case Operator.Pow:
+                                numStack.Push((decimal)Math.Pow((double)operandL, (double)operandR));
+                                break;
+                        }
+                    }
+                }
+
+            }
+
+            if (numStack.Count != 1)
+                throw new ArgumentException("Parser: Malformed expression.");
+
+            return numStack.Pop();
         }
     }
 }
