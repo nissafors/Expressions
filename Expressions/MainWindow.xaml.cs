@@ -1,5 +1,4 @@
 ﻿// TODO:
-// * Documentation
 // * Variables
 // * See Parser
 
@@ -27,8 +26,10 @@ namespace Expressions
     public partial class MainWindow : Window
     {
         private ReadOnlyCollection<string> _symbols;
-        private decimal _result;
+        private double _result;
 
+        // <summary>
+        // Main entry point for UI.</summary>
         public MainWindow()
         {
             InitializeComponent();
@@ -36,6 +37,8 @@ namespace Expressions
             initVarGrid(VarGrid, vars);
         }
 
+        // <summary>
+        // Write out variable grid on main window.</summary>
         private void initVarGrid(Panel parent, char[] vars)
         {
             int n = vars.Length;
@@ -72,7 +75,9 @@ namespace Expressions
             }
         }
 
-        // Event handler for TextChanged in Input
+        // <summary>
+        // Event handler for TextChanged in Input.
+        // Calls Lexer and Parser and prints the result.</summary>
         private void Input_TextChanged(object sender, TextChangedEventArgs e)
         {
             try

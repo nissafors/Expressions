@@ -8,6 +8,10 @@ using System.Text.RegularExpressions;
 
 namespace Expressions
 {
+    // <summary>
+    // Tools to extract mathematical symbols and numerics from a mathematical infix expression.
+    // Public methods: static ReadOnlyCollection<string> GetSymbols(string expression)
+    // </summary>
     class Lexer
     {
         // Mathematical operators
@@ -16,7 +20,7 @@ namespace Expressions
 
         // <summary>
         // Return symbols in an expression as a collection. Symbols are keywords and
-        // operators defined above and decimal numbers.</summary>
+        // operators defined above, and decimal numbers.</summary>
         // <param name="expression">The mathematical expression to be evaluated.</param>
         // <returns>Returns a collection of symbols as strings.</returns>
         public static ReadOnlyCollection<string> GetSymbols(string expression)
@@ -53,16 +57,17 @@ namespace Expressions
             return symbols.AsReadOnly();
         }
 
-
-        // Return a string like str but with all whitespace removed.
+        // <summary>
+        // Return a string like str but with all whitespace removed.</summary>
         private static string removeWhitespace(string str)
         {
             return Regex.Replace(str, @"\s+", "");
         }
 
+        // <summary>
         // Prepare pattern for concatenation in GetSymbols(). str contains operators and/or
         // keywords separated by vertical bars. Return string have special chars in regex   
-        // escaped except for vertical bars. Also, ^'s are added before each keyword.
+        // escaped except for vertical bars. Also, ^'s are added before each keyword.</summary>
         private static string preparePattern(string str)
         {
             string pattern = "|" + removeWhitespace(str); // Remove whitespace

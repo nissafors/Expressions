@@ -6,14 +6,16 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.Globalization;
+using MathNet.Numerics;
 
 namespace Expressions
 {
     class Parser
     {
         // TODO:
-        // * Factorial
         // * Functions
+        // * Negative expressions
+        // * Factorial of expressions
 
         // Note: Precedence of ParenFunc is set to lowest for simplicity in getRPN()
         enum Precedence { ParenFunc, AddSub, MultDiv, Pow, Fact };
@@ -21,7 +23,7 @@ namespace Expressions
 
         // <summary>
         // Parse and return the result of a mathematical expression given in infix notation.</summary>
-        public static decimal GetResult(ReadOnlyCollection<string> symbols)
+        public static double GetResult(ReadOnlyCollection<string> symbols)
         {
             symbols = rewriteNegitives(symbols);
             ReadOnlyCollection<string> RPN = getRPN(symbols);
@@ -75,11 +77,19 @@ namespace Expressions
         // Return true if string is numeric.</summary>
         private static bool isNumeric(string str)
         {
-            decimal tmp;
-            if (decimal.TryParse(str, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, new CultureInfo("en-US"), out tmp))
+            double tmp;
+            if (double.TryParse(str, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, new CultureInfo("en-US"), out tmp))
                 return true;
             else
                 return false;
+        }
+
+        // <summary>
+        // Convert numeric symbol to double.</summary>
+        // <remarks>No error checking. Test symbol first with isNumeric().
+        private static double parseNumeric(string symbol)
+        {
+            return double.Parse(symbol, new CultureInfo("en-US"));
         }
 
         // <summary>
@@ -186,25 +196,35 @@ namespace Expressions
 
         // <summary>
         // Return the calculated result of a mathematical expression given in RPN notation.</summary>
-        private static decimal evaluateRPN(ReadOnlyCollection<string> RPN)
+        private static double evaluateRPN(ReadOnlyCollection<string> RPN)
         {
-            Stack<decimal> numStack = new Stack<decimal>();
+            Stack<double> numStack = new Stack<double>();
 
             foreach (string symbol in RPN)
             {
                 if (isNumeric(symbol))
-                    numStack.Push(decimal.Parse(symbol, new CultureInfo("en-US")));
+                    numStack.Push(parseNumeric(symbol));
                 else
                 {
                     // Operator found
                     Operator oper = getOperatorType(symbol);
-                    decimal operandL, operandR;
+                    double operandL, operandR;
 
-                    // Is it not a binary operator?
                     if (oper == Operator.Fact)
                     {
+                        // Factorial
                         if (numStack.Count < 1)
                             throw new ArgumentException("Parser: Malformed expression.");
+                        double operand = numStack.Pop();
+                        if (operand == 0)
+                            numStack.Push(1);
+                        else if (operand % 1 == 0 && operand > 0 && operand <= 170)
+                            numStack.Push(SpecialFunctions.Factorial((int)operand));
+                        else if (operand % 1 != 0 && operand >= -170 && operand <= 170)
+                            numStack.Push(SpecialFunctions.Gamma(operand + 1D));
+                        else
+                            throw new ArgumentException("Parser: Factorial operand out of range.");
+
                     }
                     else
                     {
@@ -227,7 +247,7 @@ namespace Expressions
                                 numStack.Push(operandL / operandR);
                                 break;
                             case Operator.Pow:
-                                numStack.Push((decimal)Math.Pow((double)operandL, (double)operandR));
+                                numStack.Push(Math.Pow(operandL, operandR));
                                 break;
                         }
                     }
