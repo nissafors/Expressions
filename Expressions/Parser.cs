@@ -93,8 +93,8 @@ namespace Expressions
         }
 
         // <summary>
-        // Search symbols collection for minus sign/numeral combinations that should be interpreted
-        // as negative numbers and rewrite them as one symbol.</summary>
+        // Search symbols collection for minus sign + numeral/left parenthesis/funtion combinations that
+        // should be interpreted as negative and insert a zero before the minus sign.</summary>
         private static ReadOnlyCollection<string> rewriteNegitives(ReadOnlyCollection<string> symbols)
         {
             if (symbols.Count < 2)
@@ -109,14 +109,32 @@ namespace Expressions
                 string symAt = symbolsList.ElementAt(i);
                 string symAfter = symbolsList.ElementAt(i + 1);
 
-                if (!isNumeric(symBefore)
-                    && symBefore != ")"
-                    && symBefore != "!"
-                    && symAt == "-"
-                    && isNumeric(symAfter))
+                if (
+                    (
+                     !isNumeric(symBefore)
+                     && symBefore != ")"
+                     && symBefore != "!"
+                    )
+                    &&
+                    (
+                     symAt == "-"
+                    )
+                    &&
+                    (
+                     (
+                      symAfter != ")"
+                      && symAfter != "!"
+                      && symAfter != "+"
+                      && symAfter != "-"
+                      && symAfter != "*"
+                      && symAfter != "/"
+                      && symAfter != "^"
+                     )
+                     || isNumeric(symAfter)
+                    )
+                   )
                 {
-                    symbolsList.RemoveRange(i, 2);
-                    symbolsList.Insert(i, symAt + symAfter);
+                    symbolsList.Insert(i, "0");
                 }
             }
 
@@ -206,7 +224,7 @@ namespace Expressions
                     numStack.Push(parseNumeric(symbol));
                 else
                 {
-                    // Operator found
+                    // Operator or function found
                     Operator oper = getOperatorType(symbol);
                     double operandL, operandR;
 
@@ -225,6 +243,19 @@ namespace Expressions
                         else
                             throw new ArgumentException("Parser: Factorial operand out of range.");
 
+                    }
+                    else if (oper == Operator.Func)
+                    {
+                        // Function
+                        int numberOfArguments = Function.NumberOfArguments(symbol);
+                        if (numStack.Count < numberOfArguments)
+                            throw new ArgumentException("Parser: Function has too few arguments.");
+
+                        double[] arguments = new double[numberOfArguments];
+                        for (int i = 0; i < numberOfArguments; i++)
+                            arguments[i] = numStack.Pop();
+
+                        numStack.Push(Function.Evaluate(symbol, arguments));
                     }
                     else
                     {

@@ -16,7 +16,7 @@ namespace Expressions
     {
         // Mathematical operators
         private static string _operators = "+ | - | * | / | ( | ) | ^ | !";
-        //private static string _functions = "sin | cos | tan | abs | sqrt";
+        private static string _functions = Function.KeywordsAsVBarSeparatedString;
 
         // <summary>
         // Return symbols in an expression as a collection. Symbols are keywords and
@@ -33,13 +33,13 @@ namespace Expressions
 
             // Regex pattern for operators and functions (see member variables above)
             string opPattern = preparePattern(_operators);
-            //string fnPattern = preparePattern(_functions);
+            string fnPattern = preparePattern(_functions);
 
             // Concatenate patterns
-            string pattern = numPattern + opPattern; //+ fnPattern;
+            string pattern = numPattern + opPattern + fnPattern;
 
-            // Remove all whitespace from expression
-            expression = removeWhitespace(expression);
+            // Remove all whitespace from expression and convert to lower case
+            expression = removeWhitespace(expression).ToLower();
 
             // Extract symbols and add them to list
             while (expression.Length > 0)
