@@ -33,7 +33,9 @@ namespace Expressions
                                                 new Keyword("cos", 1, new Func<double[], double>(cos)),
                                                 new Keyword("tan", 1, new Func<double[],double>(tan)),
                                                 new Keyword("abs", 1, new Func<double[],double>(abs)),
-                                                new Keyword("sqrt", 1, new Func<double[],double>(sqrt))
+                                                new Keyword("sqrt", 1, new Func<double[],double>(sqrt)),
+                                                new Keyword("max", 2, new Func<double[], double>(max)),
+                                                new Keyword("threemax", 3, new Func<double[],double>(threemax))
                                             };
 
         private static string keywordsAsVBarSeparatedString = constructVBarSeparatedStringOfKeywords();
@@ -103,6 +105,17 @@ namespace Expressions
         private static double sqrt(double[] x)
         {
             return Math.Pow(x[0], 1D / 2D);
+        }
+
+        private static double max(double[] xy)
+        {
+            return xy[0] > xy[1] ? xy[0] : xy[1];
+        }
+
+        private static double threemax(double[] xyz)
+        {
+            double xy = xyz[0] > xyz[1] ? xyz[0] : xyz[1];
+            return xy > xyz[2] ? xy : xyz[2];
         }
     }
 }

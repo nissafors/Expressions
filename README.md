@@ -6,6 +6,5 @@ Expressions is a Windows application written in C# using Visual Studio. To build
 [Math.NET Numerics](http://numerics.mathdotnet.com/) library, which is available as a NuGet package.
 
 ## TODO
-* Code documentation
-* Functions
-* UI improvements
+* Add more functions
+* Parse variables

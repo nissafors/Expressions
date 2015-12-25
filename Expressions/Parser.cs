@@ -12,14 +12,8 @@ namespace Expressions
 {
     class Parser
     {
-        // TODO:
-        // * Functions
-        // * Negative expressions
-        // * Factorial of expressions
-
-        // Note: Precedence of ParenFunc is set to lowest for simplicity in getRPN()
-        enum Precedence { ParenFunc, AddSub, MultDiv, Pow, Fact };
-        enum Operator { Add, Sub, Mult, Div, Pow, Fact, LeftParen, RightParen, Func };
+        enum Precedence { ParenFuncComma, AddSub, MultDiv, Pow, Fact };
+        enum Operator { Add, Sub, Mult, Div, Pow, Fact, LeftParen, RightParen, Comma, Func };
 
         // <summary>
         // Parse and return the result of a mathematical expression given in infix notation.</summary>
@@ -43,7 +37,7 @@ namespace Expressions
             else if (oper == Operator.Fact)
                 return Precedence.Fact;
             else
-                return Precedence.ParenFunc;
+                return Precedence.ParenFuncComma;
         }
 
         // <summary>
@@ -68,6 +62,8 @@ namespace Expressions
                     return Operator.LeftParen;
                 case ")":
                     return Operator.RightParen;
+                case ",":
+                    return Operator.Comma;
                 default:
                     return Operator.Func;
             }
@@ -101,41 +97,57 @@ namespace Expressions
                 return symbols;
 
             List<string> symbolsList = symbols.ToList<string>();
+            Operator type;
 
             for (int i = 0; i < symbolsList.Count - 1; i++)
             {
                 // Examine three symbols in a row
-                string symBefore =  i > 0 ? symbolsList.ElementAt(i - 1) : "";
-                string symAt = symbolsList.ElementAt(i);
-                string symAfter = symbolsList.ElementAt(i + 1);
+                string symBefore = i > 0 ? symbolsList.ElementAt(i - 1) : "";
+                if (isNumeric(symBefore))
+                    continue;
+                type = getOperatorType(symBefore);
+                if (symBefore != "" && (type == Operator.Func || type == Operator.Fact || type == Operator.RightParen))
+                    continue;
 
-                if (
-                    (
-                     !isNumeric(symBefore)
-                     && symBefore != ")"
-                     && symBefore != "!"
-                    )
-                    &&
-                    (
-                     symAt == "-"
-                    )
-                    &&
-                    (
-                     (
-                      symAfter != ")"
-                      && symAfter != "!"
-                      && symAfter != "+"
-                      && symAfter != "-"
-                      && symAfter != "*"
-                      && symAfter != "/"
-                      && symAfter != "^"
-                     )
-                     || isNumeric(symAfter)
-                    )
-                   )
+                string symAt = symbolsList.ElementAt(i);
+                if (symAt != "-")
+                    continue;
+
+                string symAfter = symbolsList.ElementAt(i + 1);
+                if (!isNumeric(symAfter))
                 {
-                    symbolsList.Insert(i, "0");
+                    type = getOperatorType(symAfter);
+                    if (!(type == Operator.Func || type == Operator.LeftParen))
+                        throw new ArgumentException("Wrong symbol after negative sign.");
                 }
+
+                // We now know we have one of -num, -func() or -(expr). Rewrite to (0-num), (0-func()) or (0-(expr)).
+                int j = i + 2;
+                if (!isNumeric(symAfter))
+                {
+                    if (type == Operator.Func)
+                        j++;
+                    int leftParenCount = 0;
+                    // Find index for matching right parenthesis for the negative expression
+                    for (; j < symbolsList.Count; j++)
+                    {
+                        if (symbolsList.ElementAt(j) == "(")
+                            leftParenCount++;
+                        if (symbolsList.ElementAt(j) == ")" && leftParenCount == 0)
+                            break;
+                    }
+                    if (j == symbolsList.Count)
+                        throw new ArgumentException("Unmatched left parenthesis.");
+                    j++;
+                }
+
+                if (j == symbolsList.Count)
+                    symbolsList.Add(")");
+                else
+                    symbolsList.Insert(j, ")");
+                symbolsList.Insert(i, "0");
+                symbolsList.Insert(i, "(");
+                i += 2;
             }
 
             return symbolsList.AsReadOnly();
@@ -167,9 +179,9 @@ namespace Expressions
                         RPN.Add(symbol);
                         continue;
                     }
-
-                    if (operatorType == Operator.RightParen)
+                    if (operatorType == Operator.RightParen || operatorType == Operator.Comma)
                     {
+                        bool poppingFromComma = operatorType == Operator.Comma;
                         // Pop until we find a left parenthesis (and maybe a function)
                         while (true)
                         {
@@ -178,7 +190,11 @@ namespace Expressions
                             string oper = operatorStack.Pop();
                             operatorType = getOperatorType(oper);
                             if (operatorType == Operator.LeftParen)
+                            {
+                                if (poppingFromComma)
+                                    operatorStack.Push(oper); // Push back "(" if we're popping from a comma
                                 break;
+                            }
                             RPN.Add(oper);
                         }
 

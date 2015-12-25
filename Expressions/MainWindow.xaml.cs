@@ -1,6 +1,6 @@
 ﻿// TODO:
 // * Variables
-// * See Parser
+// * Add more functions
 
 using System;
 using System.Collections.Generic;

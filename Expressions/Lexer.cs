@@ -15,7 +15,7 @@ namespace Expressions
     class Lexer
     {
         // Mathematical operators
-        private static string _operators = "+ | - | * | / | ( | ) | ^ | !";
+        private static string _operators = "+ | - | * | / | ( | ) | ^ | ! | ,";
         private static string _functions = Function.KeywordsAsVBarSeparatedString;
 
         // <summary>
