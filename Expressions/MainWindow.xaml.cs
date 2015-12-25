@@ -1,6 +1,6 @@
 ﻿// TODO:
 // * Variables
-// * Add more functions
+// * Constants
 
 using System;
 using System.Collections.Generic;

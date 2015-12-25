@@ -133,8 +133,11 @@ namespace Expressions
                     {
                         if (symbolsList.ElementAt(j) == "(")
                             leftParenCount++;
-                        if (symbolsList.ElementAt(j) == ")" && leftParenCount == 0)
-                            break;
+                        if (symbolsList.ElementAt(j) == ")")
+                            if (leftParenCount == 0)
+                                break;
+                            else
+                                leftParenCount--;
                     }
                     if (j == symbolsList.Count)
                         throw new ArgumentException("Unmatched left parenthesis.");

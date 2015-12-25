@@ -29,13 +29,27 @@ namespace Expressions
         }
 
         private static Keyword[] keywords = {
+                                                new Keyword("sinh", 1, new Func<double[],double>(sinh)),
                                                 new Keyword("sin", 1, new Func<double[],double>(sin)),
+                                                new Keyword("asin", 1, new Func<double[],double>(asin)),
+                                                new Keyword("cosh", 1, new Func<double[],double>(cosh)),
                                                 new Keyword("cos", 1, new Func<double[], double>(cos)),
+                                                new Keyword("acos", 1, new Func<double[],double>(acos)),
+                                                new Keyword("tanh", 1, new Func<double[],double>(tanh)),
                                                 new Keyword("tan", 1, new Func<double[],double>(tan)),
+                                                new Keyword("atan", 1, new Func<double[],double>(atan)),
+                                                new Keyword("degtorad", 1, new Func<double[],double>(degtorad)),
+                                                new Keyword("radtodeg", 1, new Func<double[],double>(radtodeg)),
                                                 new Keyword("abs", 1, new Func<double[],double>(abs)),
                                                 new Keyword("sqrt", 1, new Func<double[],double>(sqrt)),
                                                 new Keyword("max", 2, new Func<double[], double>(max)),
-                                                new Keyword("threemax", 3, new Func<double[],double>(threemax))
+                                                new Keyword("min", 2, new Func<double[],double>(min)),
+                                                new Keyword("floor", 1, new Func<double[],double>(floor)),
+                                                new Keyword("ceiling", 1, new Func<double[],double>(ceiling)),
+                                                new Keyword("exp", 1, new Func<double[],double>(exp)),
+                                                new Keyword("ln", 1, new Func<double[],double>(ln)),
+                                                new Keyword("log", 1, new Func<double[],double>(log)),
+                                                new Keyword("mod", 2, new Func<double[],double>(mod))
                                             };
 
         private static string keywordsAsVBarSeparatedString = constructVBarSeparatedStringOfKeywords();
@@ -84,17 +98,57 @@ namespace Expressions
 
         private static double sin(double[] rad)
         {
-            return Trig.Sin(rad[0]);
+            return Math.Sin(rad[0]);
+        }
+
+        private static double asin(double[] sin)
+        {
+            return Math.Asin(sin[0]);
+        }
+
+        private static double sinh(double[] rad)
+        {
+            return Math.Sinh(rad[0]);
         }
 
         private static double cos(double[] rad)
         {
-            return Trig.Cos(rad[0]);
+            return Math.Cos(rad[0]);
+        }
+
+        private static double acos(double[] cos)
+        {
+            return Math.Acos(cos[0]);
+        }
+
+        private static double cosh(double[] rad)
+        {
+            return Math.Cosh(rad[0]);
         }
 
         private static double tan(double[] rad)
         {
-            return Trig.Tan(rad[0]);
+            return Math.Tan(rad[0]);
+        }
+
+        private static double atan(double[] tan)
+        {
+            return Math.Atan(tan[0]);
+        }
+
+        private static double tanh(double[] rad)
+        {
+            return Math.Tanh(rad[0]);
+        }
+
+        private static double degtorad(double[] deg)
+        {
+            return (Math.PI / 180D) * deg[0];
+        }
+
+        private static double radtodeg(double[] rad)
+        {
+            return (180D / Math.PI) * rad[0];
         }
 
         private static double abs(double[] x)
@@ -104,7 +158,7 @@ namespace Expressions
 
         private static double sqrt(double[] x)
         {
-            return Math.Pow(x[0], 1D / 2D);
+            return Math.Sqrt(x[0]);
         }
 
         private static double max(double[] xy)
@@ -112,10 +166,44 @@ namespace Expressions
             return xy[0] > xy[1] ? xy[0] : xy[1];
         }
 
-        private static double threemax(double[] xyz)
+        private static double min(double[] xy)
         {
-            double xy = xyz[0] > xyz[1] ? xyz[0] : xyz[1];
-            return xy > xyz[2] ? xy : xyz[2];
+            return xy[0] < xy[1] ? xy[0] : xy[1];
+        }
+
+        private static double floor(double[] x)
+        {
+            return Math.Floor(x[0]);
+        }
+
+        private static double ceiling(double[] x)
+        {
+            return Math.Ceiling(x[0]);
+        }
+
+        private static double round(double[] x)
+        {
+            return Math.Round(x[0]);
+        }
+
+        private static double exp(double[] x)
+        {
+            return Math.Exp(x[0]);
+        }
+
+        private static double ln(double[] x)
+        {
+            return Math.Log(x[0]);
+        }
+
+        private static double log(double[] x)
+        {
+            return Math.Log10(x[0]);
+        }
+
+        private static double mod(double[] xy)
+        {
+            return xy[0] % xy[1];
         }
     }
 }
